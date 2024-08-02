@@ -106,24 +106,9 @@ int cairAviao (Fila *fila) { /* Retornará a quantidade de aviões que caíram. 
         return 0;
     }
     
-    while (aux->proximo != NULL) {
-        if (aux->proximo->aviao.unidadesDeTempo <= SEM_COMBUSTIVEL) {
-            if (aux->proximo == fila->primeiro->proximo) { /* O avião é o
-                                                            * primeiro da fila. */
-                aviao = desenfileira(fila);
-            }
-            else if (aux->proximo == fila->ultimo) {
-                aux->proximo = NULL;
-                fila->ultimo = aux;
-            }
-            else {
-                aux->proximo = aux->proximo->proximo;
-            }
-            
-            avioesCaidos++;
-        }
-        
-        aux = aux->proximo;
+    if (aux->proximo->aviao.unidadesDeTempo <= 0) {
+        desenfileira(fila);
+        avioesCaidos++;
     }
     
     return avioesCaidos;
@@ -341,22 +326,13 @@ int main(int argc, char** argv) {
          * quinto argumento da função, uma vez que para as filas de decolagem
          * só existem três delas. */
         
-        
-        /* printf("\n\t=== FILA 1 (A) - %d AVIÕES ===\n", filaAterrissagem1.qtdeAvioes);
-        imprimirFila(filaAterrissagem1);
-        printf("\n\t=== FILA 2 (A) - %d AVIÕES ===\n", filaAterrissagem2.qtdeAvioes);
-        imprimirFila(filaAterrissagem2);
-        printf("\n\t=== FILA 3 (A) - %d AVIÕES ===\n", filaAterrissagem3.qtdeAvioes);
-        imprimirFila(filaAterrissagem3);
-        printf("\n\t=== FILA 4 (A) - %d AVIÕES ===\n", filaAterrissagem4.qtdeAvioes);
-        imprimirFila(filaAterrissagem4);
-        
-        printf("\n\t=== FILA 1 (D) - %d AVIÕES ===\n", filaDecolagem1.qtdeAvioes);
-        imprimirFila(filaDecolagem1);
-        printf("\n\t=== FILA 2 (D) - %d AVIÕES ===\n", filaDecolagem2.qtdeAvioes);
-        imprimirFila(filaDecolagem2);
-        printf("\n\t=== FILA 3 (D) - %d AVIÕES ===\n", filaDecolagem3.qtdeAvioes);
-        imprimirFila(filaDecolagem3); */
+        /* Depois, caímos os aviões que ficaram sem combustível e
+         * atualizamos suas variáveis.  */
+        avioesCaidosRound = cairAviao(&filaAterrissagem1) +
+                            cairAviao(&filaAterrissagem2) +
+                            cairAviao(&filaAterrissagem3) +
+                            cairAviao(&filaAterrissagem4);
+        avioesCaidosTotal += avioesCaidosRound;
         
         printf("Fila 1 (A): "); imprimirFila(filaAterrissagem1);
         printf("Fila 2 (A): "); imprimirFila(filaAterrissagem2);
@@ -576,14 +552,6 @@ int main(int argc, char** argv) {
         pista2.ocupado = PISTA_LIVRE;
         pista3.ocupado = PISTA_LIVRE;
         
-        /* Por fim, caímos os aviões que ficaram sem combustível e
-         * atualizamos suas variáveis.  */
-        avioesCaidosRound = cairAviao(&filaAterrissagem1) +
-                            cairAviao(&filaAterrissagem2) +
-                            cairAviao(&filaAterrissagem3) +
-                            cairAviao(&filaAterrissagem4);
-        
-        avioesCaidosTotal += avioesCaidosRound;
         avioesPousadosTotal += avioesPousadosRound;
         
         atualizarInfosAviao(&filaDecolagem1, NAO_ATUALIZAR_COMBUSTIVEL);

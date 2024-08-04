@@ -4,11 +4,17 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Arquivos de Cabeçalho"
                    projectFiles="true">
+      <itemPath>aviao.h</itemPath>
+      <itemPath>fila.h</itemPath>
+      <itemPath>pista.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Arquivos de Código-Fonte"
                    projectFiles="true">
+      <itemPath>aviao.c</itemPath>
+      <itemPath>fila.c</itemPath>
       <itemPath>main.c</itemPath>
+      <itemPath>pista.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Arquivos de Recurso"
@@ -36,7 +42,19 @@
       </toolsSet>
       <compileType>
       </compileType>
+      <item path="aviao.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="aviao.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fila.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fila.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="pista.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="pista.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -59,7 +77,19 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="aviao.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="aviao.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fila.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fila.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="pista.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="pista.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

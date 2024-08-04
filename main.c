@@ -3,287 +3,16 @@
 #include <time.h>
 #include <string.h>
 
-#define SEM_COMBUSTIVEL 0
-#define COMBUSTIVEL_CHEIO 20
-#define QTDE_GERAR_AVIOES 4
+#include "fila.h"
+#include "aviao.h"
+#include "pista.h"
 
-#define ESC_KEY_CODE 27
 
-#define PISTA_OCUPADA 1
-#define PISTA_LIVRE 0
-
-#define ROUND_ATERRISSAGEM 0
-#define ROUND_DECOLAGEM 1
-
-#define NAO_ATUALIZAR_COMBUSTIVEL 0
-#define ATUALIZAR_COMBUSTIVEL 1
-
-int ultimoIdDecolagem = 0;
-int ultimoIdAterrissagem = 1;
-
-/* Estrutura do avião. */
-typedef struct {
-    int id;
-    int unidadesDeTempo;
-    int tempoDeEspera;
-} Aviao;
-
-/* Estrutura das células da fila. */
-typedef struct Celula *Apontador;
-
-typedef struct Celula {
-    Aviao aviao;
-    Apontador proximo;
-} Celula;
-
-/* Estrutura da fila. */
-typedef struct {
-    Apontador primeiro, ultimo;
-    int qtdeAvioes; /* Com esse dado, será mais fácil decidir em que
-                     * fila inserir. */
-} Fila;
-
-/* Estrutura para as pistas. */
-typedef struct {
-    char nome[50];
-    int ocupado;
-} Pista;
-
-void criarFila (Fila* fila) {
-    /* No caso das filas deste trabalho, colocarei uma célula-cabeça para
-     * facilitar sua implementação. */
-    fila->primeiro = (Apontador)malloc(sizeof(Celula));
-    fila->ultimo = fila->primeiro;
-    fila->primeiro->proximo = NULL;
-    fila->qtdeAvioes = 0;
-}
-
-int filaVazia (Fila fila) {
-    return fila.primeiro == fila.ultimo;
-}
-
-void enfileira (Aviao aviao, Fila* fila) {
-    fila->ultimo->proximo = (Apontador)malloc(sizeof(Celula));
-    fila->ultimo->proximo->aviao = aviao;
-    fila->ultimo = fila->ultimo->proximo;
-    fila->ultimo->proximo = NULL;
-    fila->qtdeAvioes++;
-}
-
-Aviao desenfileira (Fila *fila) {
-    Aviao aviaoNulo;
-    aviaoNulo.id = -1;
-    aviaoNulo.unidadesDeTempo = -1;
-    aviaoNulo.unidadesDeTempo = 0;
-    
-    Apontador item;
-    
-    if (filaVazia(*fila)) { /* A fila está vazia, o avião não existe. */
-        return aviaoNulo;
-    }
-    
-    item = fila->primeiro->proximo;
-    
-    fila->primeiro->proximo = item->proximo;
-    fila->qtdeAvioes--;
-    
-    Aviao aviaoRemovido = item->aviao;
-    free(item);
-    
-    if (fila->primeiro->proximo == NULL) {
-        fila->ultimo = fila->primeiro;
-    }
-    
-    return aviaoRemovido;
-}
-
-int cairAviao (Fila *fila) { /* Retornará a quantidade de aviões que caíram. */
-    Apontador aux = fila->primeiro;
-    Aviao aviao;
-    int avioesCaidos = 0;
-    
-    if (filaVazia(*fila)) {
-        return 0;
-    }
-    
-    if (aux->proximo->aviao.unidadesDeTempo <= 0) {
-        desenfileira(fila);
-        avioesCaidos++;
-    }
-    
-    return avioesCaidos;
-}
-
-Fila gerarAvioesAterrissagem () {
-    Aviao novoAviao;
-    
-    Fila avioesAterrissagem;
-    criarFila(&avioesAterrissagem);
-    
-    int qtdeAvioes = rand()%QTDE_GERAR_AVIOES; /* Gera números de 0 a 3, que é a qtde. de aviões que podem ser geradas. */
-    
-    for (int i = 0; i < qtdeAvioes; i++) {
-        novoAviao.id = ultimoIdAterrissagem;
-        novoAviao.tempoDeEspera = 0;
-        novoAviao.unidadesDeTempo = rand()%20 + 1; /* Gera de 1 a 20 unidades
-                                                    * de tempo. Não gero aviões
-                                                    * com 0 de combustível pois
-                                                    * seria impossível de ele
-                                                    * chegar até as pistas em
-                                                    * primeiro lugar.*/
-        ultimoIdAterrissagem += 2; /* Atualiza o ID para o próximo avião gerado. */
-        
-        enfileira(novoAviao, &avioesAterrissagem);
-    }
-    
-    return avioesAterrissagem;
-}
-
-Fila gerarAvioesDecolagem () {
-    Aviao novoAviao;
-    
-    Fila avioesDecolagem;
-    criarFila(&avioesDecolagem);
-    
-    int qtdeAvioes = rand()%QTDE_GERAR_AVIOES; /* Gera números de 0 a 3, que é a qtde. de aviões que podem ser geradas. */
-    
-    for (int i = 0; i < qtdeAvioes; i++) {
-        novoAviao.id = ultimoIdDecolagem;
-        novoAviao.tempoDeEspera = 0;
-        novoAviao.unidadesDeTempo = COMBUSTIVEL_CHEIO;
-        ultimoIdDecolagem += 2; /* Atualiza o ID para o próximo avião gerado. */
-        
-        enfileira(novoAviao, &avioesDecolagem);
-    }
-    
-    return avioesDecolagem;
-}
-
-void atualizarInfosAviao (Fila *fila, int atualizarCombustivel) {
-    /* Atualiza informações de tempo de
-    * espera e de combustível nos aviões
-    * de determinada fila. */
-    Apontador aux = fila->primeiro;
-    
-    if (filaVazia(*fila)) {
-        return;
-    }
-    
-    while (aux->proximo != NULL) {
-        if (atualizarCombustivel) aux->proximo->aviao.unidadesDeTempo--;
-        aux->proximo->aviao.tempoDeEspera++;
-        
-        aux = aux->proximo;
-    }
-}
-
-void transferirAviao (Fila *fila1, Fila *fila2) {
-    /* Fila 1 -> Fila 2. */
-    
-    Aviao aviaoTransferido;
-    
-    aviaoTransferido = desenfileira(fila1);
-    
-    if (aviaoTransferido.id != -1) {
-        enfileira(aviaoTransferido, fila2);
-    }
-}
-
-void alocarAvioes (Fila* filaAlocacao, Fila* fila1, Fila* fila2, Fila* fila3, Fila* fila4) {
-    if (fila4 == NULL) { /* Significa que as filas são de decolagem. */
-        while (!(filaVazia(*filaAlocacao))) {
-            if (fila1->qtdeAvioes <= fila2->qtdeAvioes &&
-                fila1->qtdeAvioes <= fila3->qtdeAvioes) { /* A fila 1 tem menos aviões. */
-                
-                transferirAviao(filaAlocacao, fila1);
-            }
-            else if (fila2->qtdeAvioes <= fila1->qtdeAvioes &&
-                fila2->qtdeAvioes <= fila3->qtdeAvioes) {
-                
-                transferirAviao(filaAlocacao, fila2);
-            }
-            else if (fila3->qtdeAvioes <= fila1->qtdeAvioes &&
-                fila3->qtdeAvioes <= fila1->qtdeAvioes) {
-                
-                transferirAviao(filaAlocacao, fila3);
-            }
-        }
-    }
-    else { /* Significa que as filas são de aterrissagem. */
-        while (!(filaVazia(*filaAlocacao))) {
-            if (fila1->qtdeAvioes <= fila2->qtdeAvioes &&
-                fila1->qtdeAvioes <= fila3->qtdeAvioes &&
-                fila1->qtdeAvioes <= fila4->qtdeAvioes) { /* A fila 1 tem menos aviões. */
-                
-                transferirAviao(filaAlocacao, fila1);
-            }
-            else if (fila2->qtdeAvioes <= fila1->qtdeAvioes &&
-                     fila2->qtdeAvioes <= fila3->qtdeAvioes &&
-                     fila2->qtdeAvioes <= fila4->qtdeAvioes) {
-                
-                transferirAviao(filaAlocacao, fila2);
-            }
-            else if (fila3->qtdeAvioes <= fila1->qtdeAvioes &&
-                     fila3->qtdeAvioes <= fila2->qtdeAvioes &&
-                     fila3->qtdeAvioes <= fila4->qtdeAvioes) {
-                
-                transferirAviao(filaAlocacao, fila3);
-            }
-            else if (fila4->qtdeAvioes <= fila1->qtdeAvioes &&
-                     fila4->qtdeAvioes <= fila2->qtdeAvioes &&
-                     fila4->qtdeAvioes <= fila3->qtdeAvioes) {
-                
-                transferirAviao(filaAlocacao, fila4);
-            }
-        }
-    }
-}
-
-void imprimirFila (Fila fila) {
-    Apontador aux = fila.primeiro;
-    
-    /*if (filaVazia(fila)) {
-        printf("\t=== A FILA NÃO CONTÉM NENHUM AVIÃO ===\n");
-    }
-    else {
-        printf("\tID\tCombustível\tTempo de espera\n");
-        while (aux->proximo != NULL) {
-            printf("\t%d\t%d\t\t%d\n", aux->proximo->aviao.id, aux->proximo->aviao.unidadesDeTempo, aux->proximo->aviao.tempoDeEspera);
-            aux = aux->proximo;
-        }
-    } */
-    
-    while (aux->proximo != NULL) {
-        printf("<(%d) ", aux->proximo->aviao.unidadesDeTempo);
-        aux = aux->proximo;
-    }
-    
-    printf("\n");
-}
-
-void criarPista (Pista* pista, char* nome) {
-    strcpy(pista->nome, nome);
-    pista->ocupado = PISTA_LIVRE; /* A pista vem desocupada de início. */
-}
-
-void pousarAviao (Fila* fila, Pista* pista) {
-    Aviao aviao = desenfileira(fila);
-    
-    if (aviao.id != -1) {
-        pista->ocupado = PISTA_OCUPADA;
-    }
-}
-
-void decolarAviao (Fila* fila, Pista* pista) {
-    Aviao aviao = desenfileira(fila);
-    
-    if (aviao.id != -1) {
-        pista->ocupado = PISTA_OCUPADA;
-    }
-}
 
 int main(int argc, char** argv) {
     srand(time(NULL)); /* Seed geradora de números aleatórios. */
+    
+    int contador = 0;
     
     /* Gerando as filas de aterrissagem. */
     Fila filaAterrissagem1; criarFila(&filaAterrissagem1);
@@ -305,10 +34,25 @@ int main(int argc, char** argv) {
     Fila tempAterrissagem; criarFila(&tempAterrissagem);
     Fila tempDecolagem; criarFila(&tempDecolagem);
     
+    /* Variáveis de informações. */
     int avioesCaidosRound = 0;
     int avioesCaidosTotal = 0;
     int avioesPousadosRound = 0;
     int avioesPousadosTotal = 0;
+    int avioesDecoladosRound = 0;
+    int avioesDecoladosTotal = 0;
+    
+    int ultimoIdDecolagem = 0;
+    int ultimoIdAterrissagem = 1;
+    
+    int avioesPousadosSemReservaDeCombustivel = 0;
+    
+    int tempoEsperaDecolagemTotal = 0;
+    int tempoEsperaAterrissagemTotal = 0;
+    
+    float mediaEsperaDecolagem;
+    float mediaEsperaAterrissagem;
+    
     int escape; /* Usado para terminar o programa. */
     int round = ROUND_ATERRISSAGEM; /* Define se o round será de pouso ou decolagem. */
     
@@ -317,8 +61,8 @@ int main(int argc, char** argv) {
          * temporárias dos aviões (função de gerar aviões), que serão
          * transferidos para suas respectivas filas (função alocarAvioes()). */
         
-        tempAterrissagem = gerarAvioesAterrissagem();
-        tempDecolagem = gerarAvioesDecolagem();
+        tempAterrissagem = gerarAvioesAterrissagem(&ultimoIdAterrissagem);
+        tempDecolagem = gerarAvioesDecolagem(&ultimoIdDecolagem);
         
         alocarAvioes(&tempAterrissagem, &filaAterrissagem1, &filaAterrissagem2, &filaAterrissagem3, &filaAterrissagem4);
         alocarAvioes(&tempDecolagem, &filaDecolagem1, &filaDecolagem2, &filaDecolagem3, (Fila*)NULL);
@@ -367,90 +111,216 @@ int main(int argc, char** argv) {
                  * livres.*/
                 
                 /* Verificando as filas 1 e 2. */
-                if (!filaVazia(filaAterrissagem1) && filaVazia(filaAterrissagem2)) {
+                if (filaVazia(filaAterrissagem1) == 0 && filaVazia(filaAterrissagem2) == 1) {
+                    adicionarTempoEspera(filaAterrissagem1, &tempoEsperaAterrissagemTotal);
+                    
+                    if (filaAterrissagem1.primeiro->proximo->aviao.unidadesDeTempo == 1) avioesPousadosSemReservaDeCombustivel++;
+                    
                     pousarAviao(&filaAterrissagem1, &pista1);
                     avioesPousadosRound++;
                 }
-                else if (filaVazia(filaAterrissagem1) && !filaVazia(filaAterrissagem2)) {
+                else if (filaVazia(filaAterrissagem1) == 1 && filaVazia(filaAterrissagem2) == 0) {
+                    adicionarTempoEspera(filaAterrissagem2, &tempoEsperaAterrissagemTotal);
+                    
+                    if (filaAterrissagem2.primeiro->proximo->aviao.unidadesDeTempo == 1) avioesPousadosSemReservaDeCombustivel++;
+                    
                     pousarAviao(&filaAterrissagem2, &pista1);
                     avioesPousadosRound++;
                 }
-                else if (!filaVazia(filaAterrissagem1) && !filaVazia(filaAterrissagem2)) {
+                else if (filaVazia(filaAterrissagem1) == 0 && filaVazia(filaAterrissagem2) == 0) {
                     
                     if ((filaAterrissagem1.primeiro->proximo->aviao.unidadesDeTempo
                         + filaAterrissagem2.primeiro->proximo->aviao.unidadesDeTempo) / 2 == 1) {
 
-                       /* Nesse caso, eu vou pousar os dois aviões:
+                        adicionarTempoEspera(filaAterrissagem1, &tempoEsperaAterrissagemTotal);
+                        adicionarTempoEspera(filaAterrissagem2, &tempoEsperaAterrissagemTotal);
+                        
+                        /* Nesse caso, eu vou pousar os dois aviões:
                         * um na pista para ele, e outro na pista 3. Nesse
                         * passo, já está verificado que as duas filas possuem
                         * aviões. */
                        pousarAviao(&filaAterrissagem1, &pista1);
                        pousarAviao(&filaAterrissagem2, &pista3);
                        
+                       avioesPousadosSemReservaDeCombustivel += 2;
+                       
                        avioesPousadosRound++;
                        avioesPousadosRound++;
                     }
-                    else if (filaAterrissagem1.primeiro->proximo->aviao.tempoDeEspera <=
-                             filaAterrissagem2.primeiro->proximo->aviao.tempoDeEspera) {
+                    else if (filaAterrissagem1.primeiro->proximo->aviao.unidadesDeTempo <=
+                             filaAterrissagem2.primeiro->proximo->aviao.unidadesDeTempo) {
                         
-                        pousarAviao(&filaAterrissagem1, &pista1);
-                        avioesPousadosRound++;
+                        if (filaAterrissagem1.primeiro->proximo->aviao.unidadesDeTempo == 1) {
+                            /* Aqui, pousamos os dois aviões de uma vez,
+                             * um na pista 1 e outro na pista 3. */
+                            adicionarTempoEspera(filaAterrissagem1, &tempoEsperaAterrissagemTotal);
+                            adicionarTempoEspera(filaAterrissagem2, &tempoEsperaAterrissagemTotal);
+                            
+                            pousarAviao(&filaAterrissagem1, &pista3);
+                            pousarAviao(&filaAterrissagem2, &pista1);
+                            
+                            avioesPousadosRound += 2;
+                            avioesPousadosSemReservaDeCombustivel++;
+                        }
+                        else {
+                            /* Como nenhum dos dois aviões está com 1 de
+                             * combustível, pousamos o que tem a menor
+                             * quantidade somente. */
+                            adicionarTempoEspera(filaAterrissagem1, &tempoEsperaAterrissagemTotal);
+                            
+                            pousarAviao(&filaAterrissagem1, &pista1);
+                            avioesPousadosRound++;
+                        }
                     }
-                    else if (filaAterrissagem2.primeiro->proximo->aviao.tempoDeEspera <
-                             filaAterrissagem1.primeiro->proximo->aviao.tempoDeEspera) {
+                    else if (filaAterrissagem2.primeiro->proximo->aviao.unidadesDeTempo <
+                             filaAterrissagem1.primeiro->proximo->aviao.unidadesDeTempo) {
                         
-                        pousarAviao(&filaAterrissagem2, &pista1);
-                        avioesPousadosRound++;
+                        if (filaAterrissagem2.primeiro->proximo->aviao.unidadesDeTempo == 1) {
+                            /* Aqui, pousamos os dois aviões de uma vez,
+                             * um na pista 1 e outro na pista 3. */
+                            adicionarTempoEspera(filaAterrissagem2, &tempoEsperaAterrissagemTotal);
+                            adicionarTempoEspera(filaAterrissagem1, &tempoEsperaAterrissagemTotal);
+                            
+                            pousarAviao(&filaAterrissagem2, &pista3);
+                            pousarAviao(&filaAterrissagem1, &pista1);
+                            
+                            avioesPousadosRound += 2;
+                            avioesPousadosSemReservaDeCombustivel++;
+                        }
+                        else {
+                            /* Como nenhum dos dois aviões está com 1 de
+                             * combustível, pousamos o que tem a menor
+                             * quantidade somente. */
+                            adicionarTempoEspera(filaAterrissagem2, &tempoEsperaAterrissagemTotal);
+                            
+                            pousarAviao(&filaAterrissagem2, &pista1);
+                            avioesPousadosRound++;
+                        }
                     }
                 }
                 
                 /* Verificando as filas 3 e 4. */
-                if (!filaVazia(filaAterrissagem3) && filaVazia(filaAterrissagem4)) {
+                if (filaVazia(filaAterrissagem3) == 0 && filaVazia(filaAterrissagem4) == 1) {
+                    adicionarTempoEspera(filaAterrissagem3, &tempoEsperaAterrissagemTotal);
+                    
+                    if (filaAterrissagem3.primeiro->proximo->aviao.unidadesDeTempo == 1) avioesPousadosSemReservaDeCombustivel++;
+                    
                     pousarAviao(&filaAterrissagem3, &pista2);
                     avioesPousadosRound++;
                 }
-                else if (filaVazia(filaAterrissagem3) && !filaVazia(filaAterrissagem4)) {
+                else if (filaVazia(filaAterrissagem3) == 1 && filaVazia(filaAterrissagem4) == 0) {
+                    adicionarTempoEspera(filaAterrissagem4, &tempoEsperaAterrissagemTotal);
+                    
+                    if (filaAterrissagem4.primeiro->proximo->aviao.unidadesDeTempo == 1) avioesPousadosSemReservaDeCombustivel++;
+                    
                     pousarAviao(&filaAterrissagem4, &pista2);
                     avioesPousadosRound++;
                 }
-                else if (!filaVazia(filaAterrissagem3) && !filaVazia(filaAterrissagem4)) {
+                else if (filaVazia(filaAterrissagem3) == 0 && filaVazia(filaAterrissagem4) == 0) {
                     
                     if ((filaAterrissagem3.primeiro->proximo->aviao.unidadesDeTempo
                         + filaAterrissagem4.primeiro->proximo->aviao.unidadesDeTempo) / 2 == 1) {
 
-                       /* Nesse caso, eu vou pousar os dois aviões:
+                        /* Nesse caso, eu vou pousar os dois aviões:
                         * um na pista para ele, e outro na pista 3. Nesse
                         * passo, já está verificado que as duas filas possuem
                         * aviões. Como neste passo não há 100% de certeza de
                         * que a pista 3 estrá livre, preciso verificar isso
                         * antes de inserir nela. Caso esteja atualmente
                         * ocupada, nada será feito. */
-                       pousarAviao(&filaAterrissagem3, &pista2);
-                       avioesPousadosRound++;
-                       
-                       if (pista3.ocupado == PISTA_LIVRE) {
-                           pousarAviao(&filaAterrissagem4, &pista3);
-                           avioesPousadosRound++;
-                       }
-                    }
-                    else if (filaAterrissagem3.primeiro->proximo->aviao.tempoDeEspera <
-                             filaAterrissagem4.primeiro->proximo->aviao.tempoDeEspera) {
-                        
+                        adicionarTempoEspera(filaAterrissagem3, &tempoEsperaAterrissagemTotal);
                         pousarAviao(&filaAterrissagem3, &pista2);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
+                       
+                       if (pista3.ocupado == PISTA_LIVRE) {
+                           adicionarTempoEspera(filaAterrissagem4, &tempoEsperaAterrissagemTotal);
+                           pousarAviao(&filaAterrissagem4, &pista3);
+                           avioesPousadosRound++;
+                           avioesPousadosSemReservaDeCombustivel++;
+                       }
                     }
-                    else if (filaAterrissagem4.primeiro->proximo->aviao.tempoDeEspera <
-                             filaAterrissagem3.primeiro->proximo->aviao.tempoDeEspera) {
+                    else if (filaAterrissagem3.primeiro->proximo->aviao.unidadesDeTempo <=
+                             filaAterrissagem4.primeiro->proximo->aviao.unidadesDeTempo) {
                         
-                        pousarAviao(&filaAterrissagem4, &pista2);
-                        avioesPousadosRound++;
+                        if (filaAterrissagem3.primeiro->proximo->aviao.unidadesDeTempo == 1) {
+                            /* Aqui, pousamos os dois aviões de uma vez,
+                             * um na pista 2 e outro na pista 3, caso esteja livre. */
+                            if (pista3.ocupado == PISTA_LIVRE) {
+                                adicionarTempoEspera(filaAterrissagem3, &tempoEsperaAterrissagemTotal);
+                                adicionarTempoEspera(filaAterrissagem4, &tempoEsperaAterrissagemTotal);
+
+                                pousarAviao(&filaAterrissagem3, &pista3);
+                                pousarAviao(&filaAterrissagem4, &pista2);
+
+                                avioesPousadosRound += 2;
+                                avioesPousadosSemReservaDeCombustivel++;
+                            }
+                            else {
+                                adicionarTempoEspera(filaAterrissagem3, &tempoEsperaAterrissagemTotal);
+                                pousarAviao(&filaAterrissagem3, &pista2);
+                                avioesPousadosRound++;
+                                avioesPousadosSemReservaDeCombustivel++;
+                            }
+                        }
+                        else {
+                            /* Como nenhum dos dois aviões está com 1 de
+                             * combustível, pousamos o que tem a menor
+                             * quantidade somente. */
+                            adicionarTempoEspera(filaAterrissagem3, &tempoEsperaAterrissagemTotal);
+                            
+                            pousarAviao(&filaAterrissagem3, &pista2);
+                            avioesPousadosRound++;
+                        }
+                    }
+                    else if (filaAterrissagem4.primeiro->proximo->aviao.unidadesDeTempo <
+                             filaAterrissagem3.primeiro->proximo->aviao.unidadesDeTempo) {
+                        
+                        if (filaAterrissagem4.primeiro->proximo->aviao.unidadesDeTempo == 1) {
+                            /* Aqui, pousamos os dois aviões de uma vez,
+                             * um na pista 2 e outro na pista 3, caso esteja livre. */
+                            if (pista3.ocupado == PISTA_LIVRE) {
+                                adicionarTempoEspera(filaAterrissagem4, &tempoEsperaAterrissagemTotal);
+                                adicionarTempoEspera(filaAterrissagem3, &tempoEsperaAterrissagemTotal);
+
+                                pousarAviao(&filaAterrissagem4, &pista3);
+                                pousarAviao(&filaAterrissagem3, &pista2);
+
+                                avioesPousadosRound += 2;
+                                avioesPousadosSemReservaDeCombustivel++;
+                            }
+                            else {
+                                adicionarTempoEspera(filaAterrissagem4, &tempoEsperaAterrissagemTotal);
+                                pousarAviao(&filaAterrissagem4, &pista2);
+                                avioesPousadosRound++;
+                                avioesPousadosSemReservaDeCombustivel++;
+                            }
+                        }
+                        else {
+                            /* Como nenhum dos dois aviões está com 1 de
+                             * combustível, pousamos o que tem a menor
+                             * quantidade somente. */
+                            adicionarTempoEspera(filaAterrissagem4, &tempoEsperaAterrissagemTotal);
+                            
+                            pousarAviao(&filaAterrissagem4, &pista2);
+                            avioesPousadosRound++;
+                        }
                     }
                 }
                 
                 /* Verificando disponibilidade de pistas para decolagem. */
-                if (pista1.ocupado == PISTA_LIVRE) decolarAviao(&filaDecolagem1, &pista1);
-                if (pista2.ocupado == PISTA_LIVRE) decolarAviao(&filaDecolagem2, &pista2);
-                if (pista3.ocupado == PISTA_LIVRE) decolarAviao(&filaDecolagem3, &pista3);
+                if (filaVazia(filaDecolagem1) == 0 && pista1.ocupado == PISTA_LIVRE) {
+                    decolarAviao(&filaDecolagem1, &pista1);
+                    avioesDecoladosRound++;
+                }
+                if (filaVazia(filaDecolagem2) == 0 && pista2.ocupado == PISTA_LIVRE) {
+                    decolarAviao(&filaDecolagem2, &pista2);
+                    avioesDecoladosRound++;
+                }
+                if (filaVazia(filaDecolagem3) == 0 && pista3.ocupado == PISTA_LIVRE) {
+                    decolarAviao(&filaDecolagem3, &pista3);
+                    avioesDecoladosRound++;
+                }
                 
                 /* Por fim, neste round, atualizamos a variával para que
                  * no próximo round os aviões decolem. */
@@ -465,54 +335,62 @@ int main(int argc, char** argv) {
                 
                 /* Primeiro, verificaremos se há algum avião nas prateleiras
                  * esperando para pousar e tem combustível 1. */
-                if (!filaVazia(filaAterrissagem1) &&
+                if (filaVazia(filaAterrissagem1) == 0 &&
                      filaAterrissagem1.primeiro->proximo->aviao.unidadesDeTempo == 1) {
                     
                     if (pista1.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem1, &pista1);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                     else if (pista3.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem1, &pista3);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                 }
                 
-                if (!filaVazia(filaAterrissagem2) &&
+                if (filaVazia(filaAterrissagem2) == 0 &&
                      filaAterrissagem2.primeiro->proximo->aviao.unidadesDeTempo == 1) {
                     
                     if (pista1.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem2, &pista1);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                     else if (pista3.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem2, &pista3);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                 }
                 
-                if (!filaVazia(filaAterrissagem3) &&
+                if (filaVazia(filaAterrissagem3) == 0 &&
                      filaAterrissagem3.primeiro->proximo->aviao.unidadesDeTempo == 1) {
                     
                     if (pista2.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem3, &pista2);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                     else if (pista3.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem3, &pista3);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                 }
                 
-                if (!filaVazia(filaAterrissagem4) &&
+                if (filaVazia(filaAterrissagem4) == 0 &&
                      filaAterrissagem4.primeiro->proximo->aviao.unidadesDeTempo == 1) {
                     if (pista2.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem4, &pista2);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                     else if (pista3.ocupado == PISTA_LIVRE) {
                         pousarAviao(&filaAterrissagem4, &pista3);
                         avioesPousadosRound++;
+                        avioesPousadosSemReservaDeCombustivel++;
                     }
                 }
                 
@@ -520,14 +398,17 @@ int main(int argc, char** argv) {
                  * disponibilidade das pistas para que os aviões
                  * decolem. Como temos uma fila para cada pista,
                  * fica mais fácil a verificação. */
-                if (!filaVazia(filaDecolagem1) && pista1.ocupado == PISTA_LIVRE) {
+                if (filaVazia(filaDecolagem1) == 0 && pista1.ocupado == PISTA_LIVRE) {
                     decolarAviao(&filaDecolagem1, &pista1);
+                    avioesDecoladosRound++;
                 }
-                if (!filaVazia(filaDecolagem2) && pista2.ocupado == PISTA_LIVRE) {
+                if (filaVazia(filaDecolagem2) == 0 && pista2.ocupado == PISTA_LIVRE) {
                     decolarAviao(&filaDecolagem2, &pista2);
+                    avioesDecoladosRound++;
                 }
-                if (!filaVazia(filaDecolagem3) && pista3.ocupado == PISTA_LIVRE) {
+                if (filaVazia(filaDecolagem3) == 0 && pista3.ocupado == PISTA_LIVRE) {
                     decolarAviao(&filaDecolagem3, &pista3);
+                    avioesDecoladosRound++;
                 }
                 
                 /* Por fim, neste round, atualizamos a variával para que
@@ -553,17 +434,11 @@ int main(int argc, char** argv) {
         pista3.ocupado = PISTA_LIVRE;
         
         avioesPousadosTotal += avioesPousadosRound;
+        avioesDecoladosTotal += avioesDecoladosRound;
         
         atualizarInfosAviao(&filaDecolagem1, NAO_ATUALIZAR_COMBUSTIVEL);
         atualizarInfosAviao(&filaDecolagem2, NAO_ATUALIZAR_COMBUSTIVEL);
         atualizarInfosAviao(&filaDecolagem3, NAO_ATUALIZAR_COMBUSTIVEL);
-        
-        /* printf("Aviões caídos nesta iteração: %d\n", avioesCaidosRound);
-        printf("Aviões caídos no total: %d\n", avioesCaidosTotal);
-        printf("Aviões pousados nesta iteração: %d\n", avioesPousadosRound);
-        printf("Aviões pousados no total: %d\n", avioesPousadosTotal); */
-        
-        avioesPousadosRound = 0; 
         
         printf("\n\tROUND: %s\n", round == ROUND_ATERRISSAGEM ? "Aterrissagem" : "Decolagem");
         
@@ -576,20 +451,43 @@ int main(int argc, char** argv) {
         printf("Fila 2 (D): "); imprimirFila(filaDecolagem2);
         printf("Fila 3 (D): "); imprimirFila(filaDecolagem3);
         
+        printf("\n\nAviões caídos neste round: %d", avioesCaidosRound);
+        printf("\nAviões caídos até agora: %d", avioesCaidosTotal);
+        printf("\n\nAviões pousados neste round: %d", avioesPousadosRound);
+        printf("\nAviões pousados até agora: %d", avioesPousadosTotal);
+        printf("\n\nAviões decolados neste round: %d", avioesDecoladosRound);
+        printf("\nAviões decolados até agora: %d", avioesDecoladosTotal);
+        
         printf("\n!!===== AQUI ACABA UMA ITERAÇÃO =====!!\n");
+        
+        avioesPousadosRound = 0; 
+        avioesDecoladosRound = 0;
         
         if (round == ROUND_ATERRISSAGEM) round = ROUND_DECOLAGEM;
         else round = ROUND_ATERRISSAGEM;
         
-        printf("Aperte qualquer tecla + ENTER para continuar ou ESC + ENTER para sair.\n");
-        escape = getchar();
-        getchar();
+        //printf("Aperte qualquer tecla + ENTER!! para continuar ou ESC + ENTER para sair.\n");
+        //escape = getchar();
+        //getchar();
         
         //printf("\e[1;1H\e[2J");
         printf("\033[2J\033[H");
+        
+        contador++;
     }
-    while (escape != ESC_KEY_CODE);
+    while (/*escape != ESC_KEY_CODE*/ contador <= 10000);
+    
+    printf("\nAviões caídos até agora: %d", avioesCaidosTotal);
+    printf("\nAviões pousados até agora: %d", avioesPousadosTotal);
+    printf("\nAviões decolados até agora: %d", avioesDecoladosTotal);
+    
+    float porcentagemAvioesCaidos = (avioesCaidosTotal * 100) / (avioesCaidosTotal + avioesPousadosTotal);
+    printf("\nRazão de aviões caídos por total de aviões: %f%%", porcentagemAvioesCaidos);
+    
+    mediaEsperaAterrissagem = tempoEsperaAterrissagemTotal / avioesPousadosTotal;
+    printf("\nA média de tempo de espera para aterrissagem é de aproximadamente %f ciclos.", mediaEsperaAterrissagem);
+    
+    printf("\nQuantidade de aviões que pousaram sem reserva de combustível: %d", avioesPousadosSemReservaDeCombustivel);
     
     return (EXIT_SUCCESS);
 }
-

@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
     int escape; /* Usado para terminar o programa. */
     int round = ROUND_ATERRISSAGEM; /* Define se o round será de pouso ou decolagem. */
     
+    /* Simulação em si. */
     do {
         /* Antes de processarmos pousos e decolagens, é gerado as filas
          * temporárias dos aviões (função de gerar aviões), que serão
@@ -78,7 +79,7 @@ int main(int argc, char** argv) {
                             cairAviao(&filaAterrissagem4);
         avioesCaidosTotal += avioesCaidosRound;
         
-        printf("Fila 1 (A): "); imprimirFila(filaAterrissagem1);
+        /*printf("Fila 1 (A): "); imprimirFila(filaAterrissagem1);
         printf("Fila 2 (A): "); imprimirFila(filaAterrissagem2);
         printf("Fila 3 (A): "); imprimirFila(filaAterrissagem3);
         printf("Fila 4 (A): "); imprimirFila(filaAterrissagem4);
@@ -87,7 +88,7 @@ int main(int argc, char** argv) {
         printf("Fila 2 (D): "); imprimirFila(filaDecolagem2);
         printf("Fila 3 (D): "); imprimirFila(filaDecolagem3);
         
-        printf("\n==============================================================================\n");
+        printf("\n==============================================================================\n"); */
         
         switch (round) {
             case ROUND_ATERRISSAGEM:
@@ -310,14 +311,17 @@ int main(int argc, char** argv) {
                 
                 /* Verificando disponibilidade de pistas para decolagem. */
                 if (filaVazia(filaDecolagem1) == 0 && pista1.ocupado == PISTA_LIVRE) {
+                    adicionarTempoEspera(filaDecolagem1, &tempoEsperaDecolagemTotal);
                     decolarAviao(&filaDecolagem1, &pista1);
                     avioesDecoladosRound++;
                 }
                 if (filaVazia(filaDecolagem2) == 0 && pista2.ocupado == PISTA_LIVRE) {
+                    adicionarTempoEspera(filaDecolagem2, &tempoEsperaDecolagemTotal);
                     decolarAviao(&filaDecolagem2, &pista2);
                     avioesDecoladosRound++;
                 }
                 if (filaVazia(filaDecolagem3) == 0 && pista3.ocupado == PISTA_LIVRE) {
+                    adicionarTempoEspera(filaDecolagem3, &tempoEsperaDecolagemTotal);
                     decolarAviao(&filaDecolagem3, &pista3);
                     avioesDecoladosRound++;
                 }
@@ -399,14 +403,17 @@ int main(int argc, char** argv) {
                  * decolem. Como temos uma fila para cada pista,
                  * fica mais fácil a verificação. */
                 if (filaVazia(filaDecolagem1) == 0 && pista1.ocupado == PISTA_LIVRE) {
+                    adicionarTempoEspera(filaDecolagem1, &tempoEsperaDecolagemTotal);
                     decolarAviao(&filaDecolagem1, &pista1);
                     avioesDecoladosRound++;
                 }
                 if (filaVazia(filaDecolagem2) == 0 && pista2.ocupado == PISTA_LIVRE) {
+                    adicionarTempoEspera(filaDecolagem2, &tempoEsperaDecolagemTotal);
                     decolarAviao(&filaDecolagem2, &pista2);
                     avioesDecoladosRound++;
                 }
                 if (filaVazia(filaDecolagem3) == 0 && pista3.ocupado == PISTA_LIVRE) {
+                    adicionarTempoEspera(filaDecolagem3, &tempoEsperaDecolagemTotal);
                     decolarAviao(&filaDecolagem3, &pista3);
                     avioesDecoladosRound++;
                 }
@@ -440,7 +447,14 @@ int main(int argc, char** argv) {
         atualizarInfosAviao(&filaDecolagem2, NAO_ATUALIZAR_COMBUSTIVEL);
         atualizarInfosAviao(&filaDecolagem3, NAO_ATUALIZAR_COMBUSTIVEL);
         
-        printf("\n\tROUND: %s\n", round == ROUND_ATERRISSAGEM ? "Aterrissagem" : "Decolagem");
+        /* Caso nenhum avião tenha pousado ou decolado no round (por as
+         * filas estarem vazias), mostramos uma mensagem para que o usuári
+         * não fique perdido. */
+        if (avioesPousadosRound == 0 && avioesDecoladosRound == 0) {
+            printf("\n\t-\tNENHUM avião pousou ou decolou nesta iteração.\n");
+        }
+        
+        /*printf("\n\tROUND: %s\n", round == ROUND_ATERRISSAGEM ? "Aterrissagem" : "Decolagem");
         
         printf("Fila 1 (A): "); imprimirFila(filaAterrissagem1);
         printf("Fila 2 (A): "); imprimirFila(filaAterrissagem2);
@@ -458,7 +472,7 @@ int main(int argc, char** argv) {
         printf("\n\nAviões decolados neste round: %d", avioesDecoladosRound);
         printf("\nAviões decolados até agora: %d", avioesDecoladosTotal);
         
-        printf("\n!!===== AQUI ACABA UMA ITERAÇÃO =====!!\n");
+        printf("\n!!===== AQUI ACABA UMA ITERAÇÃO =====!!\n");*/
         
         avioesPousadosRound = 0; 
         avioesDecoladosRound = 0;
@@ -466,28 +480,31 @@ int main(int argc, char** argv) {
         if (round == ROUND_ATERRISSAGEM) round = ROUND_DECOLAGEM;
         else round = ROUND_ATERRISSAGEM;
         
-        //printf("Aperte qualquer tecla + ENTER!! para continuar ou ESC + ENTER para sair.\n");
-        //escape = getchar();
-        //getchar();
+        printf("\n\nAperte qualquer tecla + ENTER!! para continuar ou ESC + ENTER para sair.\n");
+        escape = getchar();
+        getchar();
         
         //printf("\e[1;1H\e[2J");
         printf("\033[2J\033[H");
         
         contador++;
     }
-    while (/*escape != ESC_KEY_CODE*/ contador <= 10000);
+    while (escape != ESC_KEY_CODE);
     
-    printf("\nAviões caídos até agora: %d", avioesCaidosTotal);
-    printf("\nAviões pousados até agora: %d", avioesPousadosTotal);
-    printf("\nAviões decolados até agora: %d", avioesDecoladosTotal);
-    
+    /* Cálculo das estatísticas restantes. */
     float porcentagemAvioesCaidos = (avioesCaidosTotal * 100) / (avioesCaidosTotal + avioesPousadosTotal);
-    printf("\nRazão de aviões caídos por total de aviões: %f%%", porcentagemAvioesCaidos);
-    
     mediaEsperaAterrissagem = tempoEsperaAterrissagemTotal / avioesPousadosTotal;
-    printf("\nA média de tempo de espera para aterrissagem é de aproximadamente %f ciclos.", mediaEsperaAterrissagem);
+    mediaEsperaDecolagem = tempoEsperaDecolagemTotal / avioesDecoladosTotal;
     
-    printf("\nQuantidade de aviões que pousaram sem reserva de combustível: %d", avioesPousadosSemReservaDeCombustivel);
+    /* Estatísticas finais após a simulação. */
+    printf("\n\t=== ESTATÍSTICAS ===");
+    printf("\n\tTotal de aviões caídos: %d", avioesCaidosTotal);
+    printf("\n\tTotal de aviões aterrissados: %d", avioesPousadosTotal);
+    printf("\n\tTotal de aviões decolados: %d", avioesDecoladosTotal);
+    printf("\n\tRazão de aviões caídos por total de aviões: %.2f%%", porcentagemAvioesCaidos);
+    printf("\n\tMédia de espera para aterrissagem: %.2f ciclos", mediaEsperaAterrissagem);
+    printf("\n\tMédia de espera para decolagem: %.2f ciclos", mediaEsperaDecolagem);
+    printf("\n\tTotal de aviões que pousaram sem reserva de combustível: %d", avioesPousadosSemReservaDeCombustivel);
     
     return (EXIT_SUCCESS);
 }

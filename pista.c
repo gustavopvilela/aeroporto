@@ -14,6 +14,7 @@ void pousarAviao (Fila* fila, Pista* pista) {
     
     if (aviao.id != -1) {
         pista->ocupado = PISTA_OCUPADA;
+        printf("\n\t-\tO avião de ID %d, combustível %d, pousou na pista %s.", aviao.id, aviao.unidadesDeTempo, pista->nome);
     }
 }
 
@@ -22,5 +23,6 @@ void decolarAviao (Fila* fila, Pista* pista) {
     
     if (aviao.id != -1) {
         pista->ocupado = PISTA_OCUPADA;
+        printf("\n\t-\tO avião de ID %d, combustível %d, decolou da pista %s.", aviao.id, aviao.unidadesDeTempo, pista->nome);
     }
 }

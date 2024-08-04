@@ -55,7 +55,7 @@ Aviao desenfileira (Fila *fila) {
 void imprimirFila (Fila fila) {
     Apontador aux = fila.primeiro;
     
-    /*if (filaVazia(fila)) {
+    if (filaVazia(fila)) {
         printf("\t=== A FILA NÃO CONTÉM NENHUM AVIÃO ===\n");
     }
     else {
@@ -64,14 +64,7 @@ void imprimirFila (Fila fila) {
             printf("\t%d\t%d\t\t%d\n", aux->proximo->aviao.id, aux->proximo->aviao.unidadesDeTempo, aux->proximo->aviao.tempoDeEspera);
             aux = aux->proximo;
         }
-    } */
-    
-    while (aux->proximo != NULL) {
-        printf("<(%d) ", aux->proximo->aviao.unidadesDeTempo);
-        aux = aux->proximo;
     }
-    
-    printf("\n");
 }
 
 void transferirAviao (Fila *fila1, Fila *fila2) {

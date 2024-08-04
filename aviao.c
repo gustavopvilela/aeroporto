@@ -14,8 +14,11 @@ int cairAviao (Fila *fila) { /* Retornará a quantidade de aviões que caíram. 
     }
     
     if (aux->proximo->aviao.unidadesDeTempo <= 0) {
-        desenfileira(fila);
+        aviao = desenfileira(fila);
         avioesCaidos++;
+        
+        /* Mensagem mostrando que o avião caiu. */
+        printf("\n\t-\tO avião de ID %d caiu (sem combustível há %d ciclos).", aviao.id, aviao.unidadesDeTempo * (-1));
     }
     
     return avioesCaidos;

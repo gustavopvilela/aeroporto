@@ -79,17 +79,6 @@ int main(int argc, char** argv) {
                             cairAviao(&filaAterrissagem4);
         avioesCaidosTotal += avioesCaidosRound;
         
-        /*printf("Fila 1 (A): "); imprimirFila(filaAterrissagem1);
-        printf("Fila 2 (A): "); imprimirFila(filaAterrissagem2);
-        printf("Fila 3 (A): "); imprimirFila(filaAterrissagem3);
-        printf("Fila 4 (A): "); imprimirFila(filaAterrissagem4);
-        
-        printf("Fila 1 (D): "); imprimirFila(filaDecolagem1);
-        printf("Fila 2 (D): "); imprimirFila(filaDecolagem2);
-        printf("Fila 3 (D): "); imprimirFila(filaDecolagem3);
-        
-        printf("\n==============================================================================\n"); */
-        
         switch (round) {
             case ROUND_ATERRISSAGEM:
                 /* Decidi que quando estiver no round de aterrissagem, os
@@ -451,28 +440,40 @@ int main(int argc, char** argv) {
          * filas estarem vazias), mostramos uma mensagem para que o usuári
          * não fique perdido. */
         if (avioesPousadosRound == 0 && avioesDecoladosRound == 0) {
-            printf("\n\t-\tNENHUM avião pousou ou decolou nesta iteração.\n");
+            printf("\n\t-\tNENHUM avião pousou ou decolou nesta iteração.\n\n");
         }
         
-        /*printf("\n\tROUND: %s\n", round == ROUND_ATERRISSAGEM ? "Aterrissagem" : "Decolagem");
+        printf("\n\n\n");
         
-        printf("Fila 1 (A): "); imprimirFila(filaAterrissagem1);
-        printf("Fila 2 (A): "); imprimirFila(filaAterrissagem2);
-        printf("Fila 3 (A): "); imprimirFila(filaAterrissagem3);
-        printf("Fila 4 (A): "); imprimirFila(filaAterrissagem4);
-        
-        printf("Fila 1 (D): "); imprimirFila(filaDecolagem1);
-        printf("Fila 2 (D): "); imprimirFila(filaDecolagem2);
-        printf("Fila 3 (D): "); imprimirFila(filaDecolagem3);
-        
-        printf("\n\nAviões caídos neste round: %d", avioesCaidosRound);
-        printf("\nAviões caídos até agora: %d", avioesCaidosTotal);
-        printf("\n\nAviões pousados neste round: %d", avioesPousadosRound);
-        printf("\nAviões pousados até agora: %d", avioesPousadosTotal);
-        printf("\n\nAviões decolados neste round: %d", avioesDecoladosRound);
-        printf("\nAviões decolados até agora: %d", avioesDecoladosTotal);
-        
-        printf("\n!!===== AQUI ACABA UMA ITERAÇÃO =====!!\n");*/
+        /* Imprimindo o conteúdo das filas. */
+        if (filaVazia(filaAterrissagem1) == 0) {
+            printf("\n\tFila 1 (A):\n");
+            imprimirFila(filaAterrissagem1);
+        }
+        if (filaVazia(filaAterrissagem2) == 0) {
+            printf("\n\tFila 2 (A):\n");
+            imprimirFila(filaAterrissagem2);
+        }
+        if (filaVazia(filaAterrissagem3) == 0) {
+            printf("\n\tFila 3 (A):\n");
+            imprimirFila(filaAterrissagem3);
+        }
+        if (filaVazia(filaAterrissagem4) == 0) {
+            printf("\n\tFila 4 (A):\n");
+            imprimirFila(filaAterrissagem4);
+        }
+        if (filaVazia(filaDecolagem1) == 0) {
+            printf("\n\tFila 1 (D):\n");
+            imprimirFila(filaDecolagem1);
+        }
+        if (filaVazia(filaDecolagem2) == 0) {
+            printf("\n\tFila 2 (D):\n");
+            imprimirFila(filaDecolagem2);
+        }
+        if (filaVazia(filaDecolagem3) == 0) {
+            printf("\n\tFila 3 (D):\n");
+            imprimirFila(filaDecolagem3);
+        }
         
         avioesPousadosRound = 0; 
         avioesDecoladosRound = 0;

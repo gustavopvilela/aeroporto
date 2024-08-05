@@ -13,12 +13,11 @@ int cairAviao (Fila *fila) { /* Retornará a quantidade de aviões que caíram. 
         return 0;
     }
     
-    /* if (aux->proximo->aviao.unidadesDeTempo <= 0) {
-        aviao = desenfileira(fila);
-        avioesCaidos++;
-        printf("\n\t-\tO avião de ID %d caiu (sem combustível há %d ciclos).", aviao.id, aviao.unidadesDeTempo * (-1));
-    } */
-    
+    /* Aqui, eu posso desenfileirar em cadeia caso haja aviões sem combustível
+     * em sequência. Perceba que não faço alterações no meio da fila. Estou
+     * usando apenas a função de desenfileirar. Caso ocorra um avião sem
+     * combustível no meio ou fim da fila, ele não será retirado até que
+     * chegue na primeira posição. */
     while (fila->primeiro->proximo != NULL && fila->primeiro->proximo->aviao.unidadesDeTempo <= 0) {
         aviao = desenfileira(fila);
         avioesCaidos++;

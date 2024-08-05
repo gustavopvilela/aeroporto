@@ -10,8 +10,6 @@
 int main(int argc, char** argv) {
     srand(time(NULL)); /* Seed geradora de números aleatórios. */
     
-    int contador = 0;
-    
     /* Gerando as filas de aterrissagem. */
     Fila filaAterrissagem1; criarFila(&filaAterrissagem1);
     Fila filaAterrissagem2; criarFila(&filaAterrissagem2);
@@ -427,6 +425,8 @@ int main(int argc, char** argv) {
         pista2.ocupado = PISTA_LIVRE;
         pista3.ocupado = PISTA_LIVRE;
         
+        /* Adicionamos os aviões pousados e decolados neste round à quantidade
+         * total de aviões pousados e decolados. */
         avioesPousadosTotal += avioesPousadosRound;
         avioesDecoladosTotal += avioesDecoladosRound;
         
@@ -439,7 +439,8 @@ int main(int argc, char** argv) {
         
         printf("\n\n\n");
         
-        /* Imprimindo o conteúdo das filas. */
+        /* Imprimindo o conteúdo das filas. As filas que estão vazias
+         * não são mostradas. */
         if (filaVazia(filaAterrissagem1) == 0) {
             printf("\n\tFila 1 (A):\n");
             imprimirFila(filaAterrissagem1);
@@ -469,20 +470,23 @@ int main(int argc, char** argv) {
             imprimirFila(filaDecolagem3);
         }
         
+        /* Zeramos as variáveis de aviões pousados e decolados no round
+         * atual para que sejam usadas no próximo sem interferência. */
         avioesPousadosRound = 0; 
         avioesDecoladosRound = 0;
         
+        /* Alteramos a variável de round para que os próximos aviões
+         * tenham a oportunidade de decolar e pousar. */
         if (round == ROUND_ATERRISSAGEM) round = ROUND_DECOLAGEM;
         else round = ROUND_ATERRISSAGEM;
         
-        printf("\n\nAperte qualquer tecla + ENTER!! para continuar ou ESC + ENTER para sair.\n");
+        /* O usuário então confirma se quer outra iteração ou se para na atual. */
+        printf("\n\nAperte qualquer tecla + ENTER para continuar ou ESC + ENTER para sair.\n");
         escape = getchar();
         getchar();
         
-        //printf("\e[1;1H\e[2J");
+        /* Após cada iteração, a tela é limpa. */
         printf("\033[2J\033[H");
-        
-        contador++;
     }
     while (escape != ESC_KEY_CODE);
     

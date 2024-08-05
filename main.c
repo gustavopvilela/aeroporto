@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     
     float mediaEsperaDecolagem;
     float mediaEsperaAterrissagem;
+    float porcentagemAvioesCaidos;
     
     int escape; /* Usado para terminar o programa. */
     int round = ROUND_ATERRISSAGEM; /* Define se o round será de pouso ou decolagem. */
@@ -66,6 +67,10 @@ int main(int argc, char** argv) {
         /* Nessa segunda alocação, temos de fazer o cast para o tipo Fila* do
          * quinto argumento da função, uma vez que para as filas de decolagem
          * só existem três delas. */
+        
+        /* Aqui, imprimimos qual o round da rodada, informando o usuário. */
+        printf("\n\t========= Round de %s =========\n\n", round == ROUND_ATERRISSAGEM ? "Aterrissagem" : "Decolagem");
+        
         
         /* Depois, caímos os aviões que ficaram sem combustível e
          * atualizamos suas variáveis.  */
@@ -310,10 +315,6 @@ int main(int argc, char** argv) {
                     decolarAviao(&filaDecolagem3, &pista3);
                     avioesDecoladosRound++;
                 }
-                
-                /* Por fim, neste round, atualizamos a variával para que
-                 * no próximo round os aviões decolem. */
-                //round = ROUND_DECOLAGEM;
             break;
             
             case ROUND_DECOLAGEM:
@@ -402,10 +403,6 @@ int main(int argc, char** argv) {
                     decolarAviao(&filaDecolagem3, &pista3);
                     avioesDecoladosRound++;
                 }
-                
-                /* Por fim, neste round, atualizamos a variával para que
-                 * no próximo round os aviões aterrisem. */
-                //round = ROUND_ATERRISSAGEM;
             break;
         }
         
@@ -491,7 +488,7 @@ int main(int argc, char** argv) {
     while (escape != ESC_KEY_CODE);
     
     /* Cálculo das estatísticas restantes. */
-    float porcentagemAvioesCaidos = (avioesCaidosTotal * 100) / (avioesCaidosTotal + avioesPousadosTotal);
+    porcentagemAvioesCaidos = (avioesCaidosTotal * 100) / (avioesCaidosTotal + avioesPousadosTotal);
     mediaEsperaAterrissagem = tempoEsperaAterrissagemTotal / avioesPousadosTotal;
     mediaEsperaDecolagem = tempoEsperaDecolagemTotal / avioesDecoladosTotal;
     

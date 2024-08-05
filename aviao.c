@@ -13,11 +13,17 @@ int cairAviao (Fila *fila) { /* Retornará a quantidade de aviões que caíram. 
         return 0;
     }
     
-    if (aux->proximo->aviao.unidadesDeTempo <= 0) {
+    /* if (aux->proximo->aviao.unidadesDeTempo <= 0) {
+        aviao = desenfileira(fila);
+        avioesCaidos++;
+        printf("\n\t-\tO avião de ID %d caiu (sem combustível há %d ciclos).", aviao.id, aviao.unidadesDeTempo * (-1));
+    } */
+    
+    while (fila->primeiro->proximo != NULL && fila->primeiro->proximo->aviao.unidadesDeTempo <= 0) {
         aviao = desenfileira(fila);
         avioesCaidos++;
         
-        /* Mensagem mostrando que o avião caiu. */
+        //Mensagem mostrando que o avião caiu.
         printf("\n\t-\tO avião de ID %d caiu (sem combustível há %d ciclos).", aviao.id, aviao.unidadesDeTempo * (-1));
     }
     

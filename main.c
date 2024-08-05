@@ -7,8 +7,6 @@
 #include "aviao.h"
 #include "pista.h"
 
-
-
 int main(int argc, char** argv) {
     srand(time(NULL)); /* Seed geradora de números aleatórios. */
     
@@ -431,10 +429,6 @@ int main(int argc, char** argv) {
         
         avioesPousadosTotal += avioesPousadosRound;
         avioesDecoladosTotal += avioesDecoladosRound;
-        
-        atualizarInfosAviao(&filaDecolagem1, NAO_ATUALIZAR_COMBUSTIVEL);
-        atualizarInfosAviao(&filaDecolagem2, NAO_ATUALIZAR_COMBUSTIVEL);
-        atualizarInfosAviao(&filaDecolagem3, NAO_ATUALIZAR_COMBUSTIVEL);
         
         /* Caso nenhum avião tenha pousado ou decolado no round (por as
          * filas estarem vazias), mostramos uma mensagem para que o usuári

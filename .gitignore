@@ -1,0 +1,23 @@
+# Ignorar diretórios de build e distribuição
+build/
+dist/
+
+# Ignorar configurações específicas da IDE NetBeans
+nbproject/
+.dep.inc
+Makefile
+
+# Ignorar dumps de execução
+*.stackdump
+
+# Ignorar binários e executáveis
+*.exe
+*.o
+*.obj
+*.out
+*.log
+
+# Ignorar arquivos temporários e backups comuns
+*~
+*.bak
+*.tmp
